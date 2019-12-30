@@ -37,9 +37,19 @@ def unzip(file_name, destination):
             if i % 2000 ==0:
                 printProgressBar(iteration=i, total=len(members))
         printProgressBar(iteration=len(members), total=len(members))
-
+"""
+Return a list containing full paths of all files under directory
+"""
+def get_files(directory):
+    file_list = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_list.append(os.path.join(root, file))
+    return file_list
+ 
 if __name__ == "__main__":
     if not os.path.isfile("VCTK-Corpus.zip"):
         raise ValueError("Cannot find VCTK-Corpus.zip. Please download VCTK-Corpus.zip from https://datashare.is.ed.ac.uk/handle/10283/2651")
     print("Unzip VCTK-Corpus.zip to VCTK-Corpus...", flush=True)
     unzip(file_name="VCTK-Corpus.zip", destination=".")
+    print(get_files(directory="VCTK-Corpus"))
