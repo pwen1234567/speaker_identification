@@ -1,6 +1,8 @@
 import zipfile
 import os
-
+import itertools
+import random
+import shutil
 
 # Print iterations progress
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 50, fill = '█', printEnd = "\r"):
@@ -52,4 +54,50 @@ if __name__ == "__main__":
         raise ValueError("Cannot find VCTK-Corpus.zip. Please download VCTK-Corpus.zip from https://datashare.is.ed.ac.uk/handle/10283/2651")
     print("Unzip VCTK-Corpus.zip to VCTK-Corpus...", flush=True)
     unzip(file_name="VCTK-Corpus.zip", destination=".")
-    print(get_files(directory="VCTK-Corpus"))
+    
+    """
+    Grouping by folders
+    """
+    ratio = 0.75 ## Ratio of the training set
+    print("Copy .wav files...", flush=True)
+    for folder, file_list in itertools.groupby(get_files(directory="VCTK-Corpus"), lambda x: os.path.dirname(x)):
+        
+        """
+        file_list returned by itertools.groupby() is a generatator. Turn it into a list
+        """
+        file_list = list(file_list)
+        
+        """
+        Keep files with .wav extension
+        """
+        file_list = [x for x in file_list if os.path.splitext(x)[1]==".wav"] 
+        
+        """
+        If file_list doesn't contain any .wav, then skip
+        """
+        if len(file_list) == 0:
+            continue
+        print(folder, flush=True)
+        
+        for_train = set(random.sample(file_list, k = int( len(file_list) * ratio)))
+        for_test  = set(file_list) - set(for_train)
+        
+        for src in for_train:
+            dst = os.path.join("train_data", src)
+            try:
+                shutil.copyfile(src=src, dst=dst)
+            except IOError as io_err:
+                os.makedirs(os.path.dirname(dst))
+                shutil.copyfile(src=src, dst=dst)
+            
+            
+        for src in for_test:
+            dst = os.path.join("eval_data", src)
+            try:
+                shutil.copyfile(src=src, dst=dst)
+            except IOError as io_err:
+                os.makedirs(os.path.dirname(dst))
+                shutil.copyfile(src=src, dst=dst)   
+            
+
+        
